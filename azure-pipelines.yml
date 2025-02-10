@@ -13,30 +13,63 @@ variables:
   azureSubscription: 'Microsoft Partner Network(07596ba6-3478-485a-a3b4-43ddf46dc1c2)'
   appName: 'qshtml'
 
-stages:
-- stage: Build
-  displayName: 'Build Stage'
-  jobs:
-  - job: Build
-    steps:
-    - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(build.sourcesDirectory)'
-        includeRootFolder: false
-        replaceExistingArchive: true
-        archiveType: zip
-        archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
-    - task: PublishBuildArtifacts@1
+steps:
+# - task: UseNode@2
+#   displayName: 'Install Node.js (optional, if you use any build step)'
+#   inputs:
+#     version: '18.x'
 
-- stage: Deploy
-  displayName: 'Deploy Stage'
-  dependsOn: Build
-  jobs:
-  - job: Deploy
-    steps:
-      - task: AzureWebApp@1
-        inputs:
-          azureSubscription: '$(azureSubscription)'
-          appType: webAppLinux
-          appName: '$(appName)'
-          package: '$(Build.ArtifactStagingDirectory)/site.zip'
+# If you need to install dependencies (optional, for frameworks like React/Vue/Next)
+# - script: npm install
+#   displayName: 'Install dependencies'
+
+# If your site is pre-built (pure HTML, CSS, JS), skip the build step
+# Otherwise, add a build command (for React/Vue/Next/Nuxt, etc.)
+# - script: npm run build
+#   displayName: 'Build static site'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive website files'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
+    replaceExistingArchive: true
+
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure Web App'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appName: '$(appName)'
+    appType: webAppLinux
+    package: '$(Build.ArtifactStagingDirectory)/site.zip'
+
+
+# stages:
+# - stage: Build
+#   displayName: 'Build Stage'
+#   jobs:
+#   - job: Build
+#     steps:
+#     - task: ArchiveFiles@2
+#       inputs:
+#         rootFolderOrFile: '$(build.sourcesDirectory)'
+#         includeRootFolder: false
+#         replaceExistingArchive: true
+#         archiveType: zip
+#         archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
+#     - task: PublishBuildArtifacts@1
+
+# - stage: Deploy
+#   displayName: 'Deploy Stage'
+#   dependsOn: Build
+#   jobs:
+#   - job: Deploy
+#     steps:
+#       - task: AzureWebApp@1
+#         inputs:
+#           azureSubscription: '$(azureSubscription)'
+#           appType: webAppLinux
+#           appName: '$(appName)'
+#           package: '$(Build.ArtifactStagingDirectory)/site.zip'
