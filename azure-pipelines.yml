@@ -1,0 +1,42 @@
+# HTML
+# Archive your static HTML project and save it with the build record.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  azureSubscription: 'Microsoft Partner Network(07596ba6-3478-485a-a3b4-43ddf46dc1c2)'
+  appName: 'qshtml'
+
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    steps:
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(build.sourcesDirectory)'
+        includeRootFolder: false
+        replaceExistingArchive: true
+        archiveType: zip
+        archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
+    - task: PublishBuildArtifacts@1
+
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+      - task: AzureWebApp@1
+        inputs:
+          azureSubscription: '$(azureSubscription)'
+          appType: webAppLinux
+          appName: '$(appName)'
+          package: '$(Build.ArtifactStagingDirectory)/site.zip'
